@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#14532d">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Essen">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>Mein Essen – Tracker</title>
+<style>
+:root{--bg:#f3f8f4;--card:#fff;--ink:#172033;--muted:#68758a;--accent:#16845b;--accent2:#e4f5ec;--accentInk:#0f5f41;--line:#e5eaf2;--orange:#ea580c}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}body{margin:0;background:linear-gradient(145deg,#ecf8f1,#f7f9fc 45%,#fff6ec);background-attachment:fixed;font:16px system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink);padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+main{max-width:980px;margin:auto;padding:26px 16px 50px}.top{margin-bottom:22px}.eyebrow{color:var(--accent);font-size:.78rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase}.top h1{font-size:clamp(1.7rem,4vw,2.5rem);margin:5px 0}.sub{color:var(--muted);margin:0}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px}.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:19px;box-shadow:0 8px 28px #1c31500a}.metric-label{color:var(--muted);font-size:.86rem}.metric{font-size:1.8rem;font-weight:800;margin-top:7px}.unit{font-size:.95rem;color:var(--muted);font-weight:600}.section-title{font-size:1.05rem;margin:0 0 14px}
+.entry{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;align-items:end}.entry .wide{grid-column:1/-1}.field label{display:block;color:var(--muted);font-size:.82rem;margin:0 0 6px}.field input,.field select{width:100%;padding:13px;border:1px solid #dce3ef;border-radius:12px;font:inherit;background:#fff;color:var(--ink);min-height:50px}
+button{border:0;border-radius:12px;padding:13px 18px;background:var(--accent);color:white;font:700 .95rem system-ui;cursor:pointer}button.secondary{background:var(--accent2);color:var(--accentInk)}button.danger{background:#fff0f0;color:#b42318;padding:8px 11px}button.edit{background:var(--accent2);color:var(--accentInk);padding:8px 11px}
+.formbtns{display:flex;gap:10px}.formbtns button{flex:1}#cancelEdit{display:none}.editing #cancelEdit{display:block}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.chips:empty{display:none}.chip{background:#f4f6fa;color:var(--ink);border:1px solid var(--line);border-radius:99px;padding:8px 12px;font:600 .85rem system-ui}.chips-label{color:var(--muted);font-size:.82rem;margin-top:14px}
+.chart-wrap{height:220px;margin-top:8px}svg{width:100%;height:100%;overflow:visible}.chart-note{font-size:.82rem;color:var(--muted);margin:8px 0 0}
+.day{margin-bottom:14px;border:1px solid var(--line);border-radius:16px;overflow:hidden}.dayhead{display:flex;justify-content:space-between;align-items:center;background:#f6faf7;padding:11px 14px;font-weight:750}.dayhead .sum{color:var(--accentInk)}
+.item{display:grid;grid-template-columns:52px 1fr auto;gap:10px;align-items:center;padding:11px 14px;border-top:1px solid var(--line)}.item .time{color:var(--muted);font-size:.88rem}.item .what{font-weight:650}.item .meta{color:var(--muted);font-size:.84rem;margin-top:2px}.item .kcal{font-weight:750;text-align:right;white-space:nowrap}.item .btnrow{grid-column:2/-1;display:flex;gap:8px;justify-content:flex-end}
+.empty{text-align:center;color:var(--muted);padding:26px 10px}.actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:14px}.foot{color:var(--muted);font-size:.8rem;line-height:1.5;margin:16px 3px}.more{display:block;width:100%;margin-top:4px}
+@media(max-width:650px){main{padding:20px 12px 36px}.grid{grid-template-columns:1fr 1fr}.grid .card:last-child{grid-column:1/-1}.entry{grid-template-columns:1fr 1fr}.entry .mealf{grid-column:1/-1}}
+@media print{.actions,#entryCard,.bkrow,.btnrow,.more,.bkbar{display:none!important}}
+.modal{position:fixed;inset:0;background:#0f172a80;display:flex;align-items:flex-end;justify-content:center;z-index:50;padding:12px}.modal .box{background:#fff;border-radius:22px;padding:22px;max-width:480px;width:100%;box-shadow:0 20px 50px #0004;margin-bottom:env(safe-area-inset-bottom)}
+.bkrow{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line);font-size:.9rem;color:var(--muted)}.bkrow input{width:18px;height:18px;accent-color:var(--accent)}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#172033;color:#fff;border-radius:12px;padding:11px 15px;font-size:.9rem;z-index:60;max-width:92vw}
+.bkbar{position:fixed;left:10px;right:10px;top:calc(env(safe-area-inset-top) + 10px);z-index:45;display:none;align-items:center;gap:8px;max-width:560px;margin:0 auto;background:#fff7ed;color:#9a3412;border:1px solid #fb923c;border-radius:14px;padding:8px 10px 8px 14px;box-shadow:0 8px 24px rgba(0,0,0,.18);font-size:.95rem;line-height:1.3}
+.bkbar.show{display:flex}.bkbar span{flex:1}.bkbar button{border:0;border-radius:10px;font:inherit;font-weight:700;padding:9px 12px;min-height:42px;cursor:pointer}.bkbar .go{background:#ea580c;color:#fff}.bkbar .later{background:none;color:#9a3412;padding:9px 6px}
+@media (prefers-color-scheme:dark){.bkbar{background:#3a2316;color:#fdba74;border-color:#c2410c}.bkbar .later{color:#fdba74}}
+</style>
+</head>
+<body>
+<main>
+<header class="top"><div class="eyebrow">Dein persönliches Essenstagebuch</div><h1>Mein Essen</h1><p class="sub">Was, wann, wie viel – und die Kalorien im Blick.</p></header>
+<section class="grid">
+ <div class="card"><div class="metric-label">Kalorien heute</div><div class="metric" id="todayKcal">0 <span class="unit">kcal</span></div></div>
+ <div class="card"><div class="metric-label">Ø pro Tag (7 Tage)</div><div class="metric" id="avgKcal">— <span class="unit">kcal</span></div></div>
+ <div class="card"><div class="metric-label">Mahlzeiten heute</div><div class="metric" id="todayCount">0</div></div>
+</section>
+<section class="card" id="entryCard" style="margin-bottom:16px">
+ <h2 class="section-title" id="formTitle">Neuen Eintrag hinzufügen</h2>
+ <form id="entryForm" class="entry">
+  <div class="field"><label for="date">Datum</label><input id="date" type="date" required></div>
+  <div class="field"><label for="time">Uhrzeit</label><input id="time" type="time" required></div>
+  <div class="field mealf"><label for="meal">Mahlzeit</label><select id="meal"><option>Frühstück</option><option>Mittagessen</option><option>Abendessen</option><option>Snack</option><option>Getränk</option></select></div>
+  <div class="field wide"><label for="food">Was hast du gegessen?</label><input id="food" list="foodList" autocomplete="off" placeholder="z. B. Brötchen mit Käse" required><datalist id="foodList"></datalist></div>
+  <div class="field"><label for="amount">Wie viel?</label><input id="amount" placeholder="z. B. 2 Stück, 300 g"></div>
+  <div class="field"><label for="kcal">Kalorien (ca.)</label><input id="kcal" type="number" inputmode="numeric" min="0" max="10000" step="1" placeholder="z. B. 450"></div>
+  <div class="formbtns wide"><button type="button" class="secondary" id="cancelEdit">Abbrechen</button><button type="submit" id="submitBtn">＋ Speichern</button></div>
+ </form>
+ <div class="chips-label" id="chipsLabel" hidden>Schnell eintragen (antippen):</div>
+ <div class="chips" id="chips"></div>
+</section>
+<section class="card" style="margin-bottom:16px">
+ <h2 class="section-title">Kalorien der letzten 14 Tage</h2><div class="chart-wrap"><svg id="chart" viewBox="0 0 700 220" role="img" aria-label="Balkendiagramm der Kalorien pro Tag"></svg></div><p class="chart-note" id="chartNote">Dein Verlauf erscheint hier, sobald du Einträge gespeichert hast.</p>
+</section>
+<section class="card">
+ <h2 class="section-title">Deine Übersicht</h2>
+ <div id="days"><div class="empty">Noch keine Einträge. Trage oben deine erste Mahlzeit ein.</div></div>
+ <button class="secondary more" id="more" hidden>Ältere Tage anzeigen</button>
+ <div class="actions"><button id="backup">Backup speichern</button><button class="secondary" id="restore">Backup laden</button><button class="secondary" id="export">CSV exportieren</button><button class="secondary" id="print">Drucken</button><button class="danger" id="clear">Alle Daten löschen</button></div>
+ <div class="bkrow"><span id="bkInfo">Letztes Backup: noch nie</span><label style="display:flex;gap:8px;align-items:center;white-space:nowrap"><input type="checkbox" id="bkRemind"> Hinweis nach dem Speichern</label></div>
+</section>
+<p class="foot">Deine Einträge werden lokal in dieser App auf diesem Gerät gespeichert. Beim Löschen der Browserdaten oder bei Deinstallation können sie verloren gehen – speichere deshalb regelmäßig ein Backup. Mit „Backup laden“ holst du die Daten zurück – auch aus einer exportierten CSV-Datei. Die App benötigt keine Anmeldung und keine Internetverbindung.</p><p class="foot" style="text-align:center">Version 1</p>
+</main>
+<script>
+const $=id=>document.getElementById(id), KEY='mein-essen-tracker-v1';
+let entries=[]; try{entries=JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){entries=[]}
+let editId=null, showDays=7;
+const today=()=>new Date().toLocaleDateString('en-CA');
+const nowTime=()=>new Date().toTimeString().slice(0,5);
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const num=n=>Number(n||0).toLocaleString('de-DE');
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function guessMeal(t){const h=+String(t||nowTime()).slice(0,2);return h<10.5?'Frühstück':h<15?'Mittagessen':h<17?'Snack':'Abendessen'}
+function resetForm(){editId=null;$('entryCard').classList.remove('editing');$('formTitle').textContent='Neuen Eintrag hinzufügen';$('submitBtn').textContent='＋ Speichern';$('date').value=today();$('time').value=nowTime();$('meal').value=guessMeal();$('food').value='';$('amount').value='';$('kcal').value=''}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(entries))}catch(e){}bk.changed=Date.now();bk.n=(bk.n||0)+1;bkSave();bkBarShow();render()}
+/* ---------- Backup-Hinweis nach dem Speichern ---------- */
+function bkBarHide(){const b=document.getElementById('bkbar');if(b)b.classList.remove('show')}
+function bkBarShow(){let ok=false;try{ok=bk.remind&&(bk.n||0)>0}catch(e){ok=false}if(!ok||!document.body){bkBarHide();return}
+ let b=document.getElementById('bkbar');
+ if(!b){b=document.createElement('div');b.id='bkbar';b.className='bkbar';b.setAttribute('role','status');b.innerHTML='<span></span><button class="later" type="button">Später</button><button class="go" type="button">Sichern</button>';b.querySelector('.later').onclick=bkBarHide;b.querySelector('.go').onclick=()=>doBackup();document.body.appendChild(b)}
+ b.querySelector('span').textContent=`${bk.n} ${bk.n===1?'Änderung':'Änderungen'} seit dem letzten Backup`;b.classList.add('show')}
+/* ---------- Backup ---------- */
+const BKEY='mein-essen-backup-v1';
+let bk={};try{bk=JSON.parse(localStorage.getItem(BKEY)||'{}')||{}}catch(e){bk={}}
+if(bk.remind==null)bk.remind=true;
+function bkSave(){try{localStorage.setItem(BKEY,JSON.stringify(bk))}catch(e){}}
+function toast(m){document.querySelector('.toast')?.remove();const t=document.createElement('div');t.className='toast';t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),2800)}
+function lastBkTxt(){if(!bk.last)return 'noch nie';const d=new Date(bk.last),n=Math.round((new Date(today()+'T12:00:00')-new Date(d.toLocaleDateString('en-CA')+'T12:00:00'))/864e5);return n<=0?'heute':n===1?'gestern':`vor ${n} Tagen (${d.toLocaleDateString('de-DE')})`}
+function bkUi(){$('bkInfo').textContent='Letztes Backup: '+lastBkTxt();$('bkRemind').checked=!!bk.remind}
+async function saveFile(name,text,mime,ext){
+ const blob=new Blob([text],{type:mime});
+ if(window.showSaveFilePicker){
+  try{const h=await window.showSaveFilePicker({suggestedName:name,types:[{description:ext==='.csv'?'CSV-Datei':'Backup-Datei',accept:{[mime.split(';')[0]]:[ext]}}]});const w=await h.createWritable();await w.write(blob);await w.close();return 'saved'}
+  catch(e){if(e&&e.name==='AbortError')return 'cancel'}
+ }
+ try{const f=new File([blob],name,{type:mime});if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:name});return 'shared'}}
+ catch(e){if(e&&e.name==='AbortError')return 'cancel'}
+ const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1500);
+ return 'downloaded';
+}
+const SAVED_MSG={saved:'Backup wurde gespeichert',shared:'Backup wurde weitergegeben',downloaded:'Backup liegt im Download-Ordner'};
+async function doBackup(){
+ const r=await saveFile(`essen-backup-${today()}.json`,JSON.stringify({app:'essen',v:1,entries},null,1),'application/json','.json');
+ if(r==='cancel')return;
+ bk.last=Date.now();bk.n=0;bkSave();bkBarHide();bkUi();toast(SAVED_MSG[r]);
+}
+function clean(e){if(!e||!/^\d{4}-\d{2}-\d{2}$/.test(e.date)||!String(e.food||'').trim())return null;
+ return{id:e.id||uid(),date:e.date,time:/^\d{2}:\d{2}$/.test(e.time||'')?e.time:'12:00',meal:e.meal||'Snack',food:String(e.food).trim(),amount:String(e.amount||'').trim(),kcal:Math.max(0,Math.round(Number(e.kcal)||0))}}
+function csvSplit(l){const out=[];let cur='',q=false;for(let i=0;i<l.length;i++){const c=l[i];if(q){if(c==='"'&&l[i+1]==='"'){cur+='"';i++}else if(c==='"')q=false;else cur+=c}else if(c==='"')q=true;else if(c===';'){out.push(cur);cur=''}else cur+=c}out.push(cur);return out}
+function parseBackup(txt){
+ txt=String(txt||'').replace(/^﻿/,'').trim();
+ if(txt[0]==='{'||txt[0]==='['){const d=JSON.parse(txt);const arr=Array.isArray(d)?d:d.entries;if(!Array.isArray(arr))throw 0;return arr.map(clean).filter(Boolean)}
+ return txt.split(/\r?\n/).slice(1).map(l=>{const [date,time,meal,food,amount,kcal]=csvSplit(l).map(s=>s.trim());return clean({date,time,meal,food,amount,kcal:String(kcal||'').replace(/\./g,'').replace(',','.')})}).filter(Boolean);
+}
+function restore(){
+ const inp=document.createElement('input');inp.type='file';inp.accept='.json,.csv,application/json,text/csv,text/plain';
+ inp.onchange=()=>{const f=inp.files&&inp.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{let list;try{list=parseBackup(r.result)}catch(e){list=null}
+  if(!list||!list.length){toast('In der Datei wurden keine Einträge gefunden');return}
+  if(entries.length&&!confirm(`${list.length} Einträge aus „${f.name}“ laden? Die aktuellen Daten in der App werden dabei ersetzt.`))return;
+  entries=list;save();toast(`${entries.length} Einträge geladen`)};r.readAsText(f)};
+ inp.click();
+}
+/* ---------- Anzeige ---------- */
+function fmtDate(s){return new Date(s+'T12:00:00').toLocaleDateString('de-DE')}
+function dayName(s){const t=today(),y=new Date(Date.now()-864e5).toLocaleDateString('en-CA');if(s===t)return 'Heute';if(s===y)return 'Gestern';return new Date(s+'T12:00:00').toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'})}
+function sumByDay(){const m={};entries.forEach(e=>{m[e.date]=(m[e.date]||0)+e.kcal});return m}
+function render(){
+ entries.sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time));
+ const sums=sumByDay(), t=today(), todays=entries.filter(e=>e.date===t);
+ $('todayKcal').innerHTML=`${num(sums[t]||0)} <span class="unit">kcal</span>`;
+ $('todayCount').textContent=todays.length;
+ // Durchschnitt der letzten 7 Tage (nur Tage mit Einträgen, ohne heute, falls genug vorhanden)
+ const last7=[];for(let i=1;i<=7;i++){const d=new Date(Date.now()-i*864e5).toLocaleDateString('en-CA');if(sums[d]!=null)last7.push(sums[d])}
+ if(!last7.length&&sums[t]!=null)last7.push(sums[t]);
+ $('avgKcal').innerHTML=last7.length?`${num(Math.round(last7.reduce((a,b)=>a+b,0)/last7.length))} <span class="unit">kcal</span>`:'— <span class="unit">kcal</span>';
+ // Tage gruppieren
+ const dates=[...new Set(entries.map(e=>e.date))];
+ const shown=dates.slice(0,showDays);
+ $('days').innerHTML=dates.length?shown.map(d=>{const items=entries.filter(e=>e.date===d).sort((a,b)=>a.time.localeCompare(b.time));
+  return `<div class="day"><div class="dayhead"><span>${esc(dayName(d))}</span><span class="sum">${num(sums[d])} kcal</span></div>${items.map(e=>`<div class="item"><div class="time">${esc(e.time)}</div><div><div class="what">${esc(e.food)}</div><div class="meta">${esc(e.meal)}${e.amount?' · '+esc(e.amount):''}</div></div><div class="kcal">${e.kcal?num(e.kcal)+' kcal':'–'}</div><div class="btnrow"><button class="edit" data-edit="${e.id}">Bearbeiten</button><button class="danger" data-delete="${e.id}">Löschen</button></div></div>`).join('')}</div>`}).join(''):'<div class="empty">Noch keine Einträge. Trage oben deine erste Mahlzeit ein.</div>';
+ $('more').hidden=dates.length<=showDays;
+ document.querySelectorAll('[data-delete]').forEach(el=>el.addEventListener('click',()=>{if(confirm('Diesen Eintrag löschen?')){entries=entries.filter(x=>x.id!==el.dataset.delete);if(editId===el.dataset.delete)resetForm();save()}}));
+ document.querySelectorAll('[data-edit]').forEach(el=>el.addEventListener('click',()=>startEdit(el.dataset.edit)));
+ renderFoods();drawChart(sums);
+}
+function startEdit(id){const e=entries.find(x=>x.id===id);if(!e)return;editId=id;$('entryCard').classList.add('editing');$('formTitle').textContent='Eintrag bearbeiten';$('submitBtn').textContent='✓ Änderung speichern';$('date').value=e.date;$('time').value=e.time;$('meal').value=e.meal;$('food').value=e.food;$('amount').value=e.amount;$('kcal').value=e.kcal||'';$('entryCard').scrollIntoView({behavior:'smooth',block:'start'})}
+/* Häufige Speisen: zum schnellen Eintragen und zum Vorschlagen der Kalorien */
+function foodStats(){const m={};entries.forEach(e=>{const k=e.food.toLowerCase();if(!m[k])m[k]={food:e.food,amount:e.amount,kcal:e.kcal,n:0,last:''};m[k].n++;const s=e.date+e.time;if(s>m[k].last){m[k].last=s;m[k].amount=e.amount;m[k].kcal=e.kcal;m[k].food=e.food}});return Object.values(m)}
+function renderFoods(){const st=foodStats();$('foodList').innerHTML=st.map(f=>`<option value="${esc(f.food)}">`).join('');
+ const top=st.sort((a,b)=>b.n-a.n||b.last.localeCompare(a.last)).slice(0,8);
+ $('chipsLabel').hidden=!top.length;
+ $('chips').innerHTML=top.map((f,i)=>`<button type="button" class="chip" data-chip="${i}">${esc(f.food)}${f.kcal?' · '+num(f.kcal):''}</button>`).join('');
+ $('chips').querySelectorAll('[data-chip]').forEach(el=>el.addEventListener('click',()=>{const f=top[+el.dataset.chip];$('food').value=f.food;$('amount').value=f.amount||'';$('kcal').value=f.kcal||'';$('kcal').focus()}));
+}
+$('food').addEventListener('change',()=>{const f=foodStats().find(x=>x.food.toLowerCase()===$('food').value.trim().toLowerCase());if(f){if(!$('amount').value)$('amount').value=f.amount||'';if(!$('kcal').value&&f.kcal)$('kcal').value=f.kcal}});
+function drawChart(sums){
+ const svg=$('chart'),days=[];for(let i=13;i>=0;i--){const d=new Date(Date.now()-i*864e5).toLocaleDateString('en-CA');days.push({d,v:sums[d]||0})}
+ const max=Math.max(...days.map(x=>x.v));
+ if(!max){svg.innerHTML='';$('chartNote').textContent='Dein Verlauf erscheint hier, sobald du Einträge mit Kalorien gespeichert hast.';return}
+ const top=Math.ceil(max*1.1/500)*500, bw=610/14, y=v=>190-v/top*160;
+ svg.innerHTML=`<line x1="45" y1="190" x2="655" y2="190" stroke="#dfe6f1"/><line x1="45" y1="${y(top/2)}" x2="655" y2="${y(top/2)}" stroke="#eef1f6" stroke-dasharray="4 4"/><text x="40" y="${y(top/2)+4}" text-anchor="end" fill="#68758a" font-size="11">${num(top/2)}</text><text x="40" y="${y(top)+4}" text-anchor="end" fill="#68758a" font-size="11">${num(top)}</text>`+
+ days.map((x,i)=>{const h=190-y(x.v),cx=45+i*bw+bw/2,isT=i===13;return `${x.v?`<rect x="${45+i*bw+5}" y="${y(x.v)}" width="${bw-10}" height="${h}" rx="6" fill="${isT?'#ea580c':'#16845b'}"/><text x="${cx}" y="${y(x.v)-6}" text-anchor="middle" fill="#172033" font-size="10" font-weight="700">${x.v>=1000?(x.v/1000).toLocaleString('de-DE',{maximumFractionDigits:1})+'k':x.v}</text>`:''}<text x="${cx}" y="208" text-anchor="middle" fill="#68758a" font-size="10">${new Date(x.d+'T12:00:00').getDate()}.</text>`}).join('');
+ const withData=days.filter(x=>x.v);
+ $('chartNote').textContent=`Orange = heute. An ${withData.length} von 14 Tagen eingetragen, im Schnitt ${num(Math.round(withData.reduce((a,b)=>a+b.v,0)/withData.length))} kcal pro Tag.`;
+}
+/* ---------- Ereignisse ---------- */
+$('entryForm').addEventListener('submit',ev=>{ev.preventDefault();
+ const e=clean({id:editId||uid(),date:$('date').value,time:$('time').value,meal:$('meal').value,food:$('food').value,amount:$('amount').value,kcal:$('kcal').value});
+ if(!e)return;
+ if(editId){const i=entries.findIndex(x=>x.id===editId);if(i>=0)entries[i]=e;else entries.push(e)}else entries.push(e);
+ const wasEdit=!!editId;resetForm();save();toast(wasEdit?'Änderung gespeichert':'Eintrag gespeichert');
+});
+$('cancelEdit').addEventListener('click',resetForm);
+$('time').addEventListener('change',()=>{if(!editId)$('meal').value=guessMeal($('time').value)});
+$('more').addEventListener('click',()=>{showDays+=7;render()});
+$('export').addEventListener('click',async()=>{const q=s=>/[;"\n]/.test(s)?'"'+String(s).replace(/"/g,'""')+'"':s;
+ const rows=[...entries].sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
+ const csv='Datum;Uhrzeit;Mahlzeit;Essen;Menge;Kalorien\n'+rows.map(e=>[e.date,e.time,e.meal,q(e.food),q(e.amount),e.kcal].join(';')).join('\n');
+ const r=await saveFile('essenstagebuch.csv','﻿'+csv,'text/csv;charset=utf-8','.csv');if(r!=='cancel')toast('CSV wurde exportiert')});
+$('print').addEventListener('click',()=>window.print());
+$('clear').addEventListener('click',()=>{if(confirm('Wirklich alle gespeicherten Essensdaten löschen?')){entries=[];resetForm();save()}});
+$('backup').addEventListener('click',doBackup);
+$('restore').addEventListener('click',restore);
+$('bkRemind').addEventListener('change',()=>{bk.remind=$('bkRemind').checked;bkSave();bkBarShow();toast(bk.remind?'Erinnerung ist an':'Erinnerung ist aus')});
+resetForm();render();bkUi();
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){bkUi();if(!editId&&!$('food').value){$('date').value=today();$('time').value=nowTime();$('meal').value=guessMeal()}render()}});
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))}
+</script>
+</body></html>
